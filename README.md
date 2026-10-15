@@ -1,4 +1,6 @@
-# Türkçe — vocab + grammar flashcards
+# Türkçe — vocab + grammar flashcards   
+
+https://turkishflashcards.vercel.app/  
 
 A flashcard app for learning Turkish: plain vocab flashcards, plus a grammar-practice mode
 that generates example sentences (via the free Gemini API) built around your own words and
