@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent, type MouseEvent } from "react";
 import type { FrontSide, Word } from "../types";
 
 interface VocabTypingPracticeProps {
@@ -138,13 +138,23 @@ export function VocabTypingPractice({
     setNearMiss(null);
   }
 
-  // Once a card is over, Enter should move on to the next one. The input is
-  // made read-only rather than disabled so it keeps focus and its form's
-  // implicit submission still fires — and it's re-focused here in case the
-  // card was ended by clicking a button instead.
+  // Keeps the cursor in the answer box from one card to the next, so answers
+  // can be typed back to back without clicking into it each time. Only pulls
+  // focus back from inside the card (or from nowhere), so dragging a filter
+  // slider above, which can move the deck onto a new card, isn't interrupted.
+  const cardRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    if (outcome || nearMiss) inputRef.current?.focus();
-  }, [outcome, nearMiss]);
+    const active = document.activeElement;
+    if (!active || active === document.body || cardRef.current?.contains(active)) {
+      inputRef.current?.focus();
+    }
+  }, [currentKey, outcome, nearMiss]);
+
+  // Once a card is over, Enter should move on to the next one, so the input
+  // stays focused and editable rather than going read-only or disabled — a
+  // read-only field drops a phone's on-screen keyboard. Typing is ignored
+  // instead (see onChange).
+  const locked = !!outcome || !!nearMiss;
 
   const variants = currentCard ? variantsFor(currentCard) : [];
   const answerOf = (word: Word) => (frontSide === "turkish" ? word.meaning : word.term);
@@ -218,7 +228,7 @@ export function VocabTypingPractice({
   }
 
   // Keys that answer the card once it's over, wherever focus is within it.
-  // Only live while the input is read-only, so they never eat a letter the
+  // Only live while the input is locked, so they never eat a letter the
   // learner is still typing.
   function handleCardKeyDown(e: KeyboardEvent<HTMLDivElement>) {
     const key = e.key.toLowerCase();
@@ -236,6 +246,12 @@ export function VocabTypingPractice({
       e.preventDefault();
       acceptTypo();
     }
+  }
+
+  // Put on every button here so tapping one doesn't pull focus out of the
+  // answer box — on a phone that would drop the keyboard between cards.
+  function keepInputFocus(e: MouseEvent) {
+    e.preventDefault();
   }
 
   function giveUp() {
@@ -270,6 +286,7 @@ export function VocabTypingPractice({
       </p>
 
       <div
+        ref={cardRef}
         className="w-full max-w-md rounded-2xl border border-neutral-200 bg-white p-6 shadow-md shadow-neutral-900/5"
         onKeyDown={handleCardKeyDown}
       >
@@ -294,10 +311,11 @@ export function VocabTypingPractice({
             autoFocus
             value={attempt}
             onChange={(e) => {
+              if (locked) return;
               setAttempt(e.target.value);
               setNotice(null);
             }}
-            readOnly={!!outcome || !!nearMiss}
+            aria-readonly={locked}
             placeholder={
               found.length > 0
                 ? "Type another…"
@@ -305,7 +323,7 @@ export function VocabTypingPractice({
                   ? "Type the English meaning…"
                   : "Type the Turkish word…"
             }
-            className="rounded-md border border-neutral-300 px-3 py-2 text-base outline-none transition focus:border-red-600 focus:ring-2 focus:ring-red-600/20 read-only:bg-neutral-50 read-only:text-neutral-400"
+            className={`rounded-md border border-neutral-300 px-3 py-2 text-base outline-none transition focus:border-red-600 focus:ring-2 focus:ring-red-600/20 ${locked ? "bg-neutral-50 text-neutral-400" : ""}`}
           />
           {notice && !outcome && !nearMiss && (
             <p role="status" className="text-sm font-medium text-emerald-700">
@@ -325,6 +343,7 @@ export function VocabTypingPractice({
               <div className="flex gap-2">
                 <button
                   type="button"
+                  onMouseDown={keepInputFocus}
                   onClick={() => resolveNearMiss(true)}
                   className="rounded-md bg-amber-700 px-3 py-1.5 text-xs font-medium text-white shadow-sm transition hover:bg-amber-800"
                 >
@@ -332,6 +351,7 @@ export function VocabTypingPractice({
                 </button>
                 <button
                   type="button"
+                  onMouseDown={keepInputFocus}
                   onClick={() => resolveNearMiss(false)}
                   className="rounded-md border border-amber-300 bg-white px-3 py-1.5 text-xs font-medium text-amber-900 transition hover:bg-amber-100"
                 >
@@ -344,6 +364,7 @@ export function VocabTypingPractice({
             <div className="flex gap-2">
               <button
                 type="submit"
+                onMouseDown={keepInputFocus}
                 disabled={!attempt.trim()}
                 className="flex-1 rounded-md bg-red-700 px-4 py-2 text-sm font-medium text-white shadow-sm shadow-red-900/20 transition hover:bg-red-800 disabled:opacity-50"
               >
@@ -352,6 +373,7 @@ export function VocabTypingPractice({
               {found.length > 0 && (
                 <button
                   type="button"
+                  onMouseDown={keepInputFocus}
                   onClick={giveUp}
                   className="rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-600 transition hover:border-neutral-300 hover:bg-neutral-50"
                 >
@@ -396,6 +418,7 @@ export function VocabTypingPractice({
             <div className="flex gap-2">
               <button
                 type="button"
+                onMouseDown={keepInputFocus}
                 onClick={handleNext}
                 className="flex-1 rounded-md bg-red-700 px-4 py-2 text-sm font-medium text-white shadow-sm shadow-red-900/20 transition hover:bg-red-800"
               >
@@ -404,6 +427,7 @@ export function VocabTypingPractice({
               {outcome.attempted && outcome.missed.length > 0 && (
                 <button
                   type="button"
+                  onMouseDown={keepInputFocus}
                   onClick={acceptTypo}
                   title="Credit the answer you were going for, without retyping it"
                   className="rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-600 transition hover:border-neutral-300 hover:bg-neutral-50"
@@ -424,6 +448,7 @@ export function VocabTypingPractice({
       <div className="flex items-center gap-2">
         <button
           type="button"
+          onMouseDown={keepInputFocus}
           className="rounded-md border border-neutral-200 bg-white px-3 py-1.5 text-sm text-neutral-600 transition hover:border-neutral-300 hover:bg-neutral-50"
           onClick={() => onGoTo(safeIndex - 1)}
         >
@@ -431,6 +456,7 @@ export function VocabTypingPractice({
         </button>
         <button
           type="button"
+          onMouseDown={keepInputFocus}
           className="rounded-md border border-neutral-200 bg-white px-3 py-1.5 text-sm text-neutral-600 transition hover:border-neutral-300 hover:bg-neutral-50"
           onClick={onShuffle}
         >
@@ -438,6 +464,7 @@ export function VocabTypingPractice({
         </button>
         <button
           type="button"
+          onMouseDown={keepInputFocus}
           className="rounded-md border border-neutral-200 bg-white px-3 py-1.5 text-sm text-neutral-600 transition hover:border-neutral-300 hover:bg-neutral-50"
           onClick={() => onGoTo(safeIndex + 1)}
         >
@@ -446,6 +473,7 @@ export function VocabTypingPractice({
         {onReset && (
           <button
             type="button"
+            onMouseDown={keepInputFocus}
             title="Back to the first card, in the original order"
             className="ml-2 rounded-md px-3 py-1.5 text-sm text-neutral-400 transition hover:bg-neutral-50 hover:text-neutral-600"
             onClick={onReset}
