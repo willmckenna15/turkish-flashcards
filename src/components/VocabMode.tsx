@@ -74,6 +74,9 @@ export function VocabMode() {
     useWords();
   const [practiceMode, setPracticeMode] = useState<PracticeMode>("flip");
   const [lastAnswer, setLastAnswer] = useState<LastAnswer | null>(null);
+  // Phones only: the study options fold away behind a one-line summary so the
+  // card fits on screen without scrolling. Always shown from `sm` up.
+  const [optionsOpen, setOptionsOpen] = useState(false);
   const [wrongFilter, setWrongFilter] = useLocalStorageState<WrongFilter>(
     `turkish-flashcards:wrong-filter:${user?.id ?? "anon"}`,
     defaultWrongFilter,
@@ -229,9 +232,41 @@ export function VocabMode() {
 
   const showTurkishFirst = settings.frontSide === "turkish";
 
+  const foldOnPhone = optionsOpen ? "flex" : "hidden sm:flex";
+  const optionsSummary = [
+    practiceMode === "type" ? "Typing" : "Flip cards",
+    showTurkishFirst ? "TR → EN" : "EN → TR",
+    settings.studyScope === "missed" ? `Missed (${missedCount})` : "All words",
+    ...(filterActive || addedFilterActive ? ["filtered"] : []),
+  ].join(" · ");
+
   return (
-    <div className="mx-auto flex max-w-2xl flex-col items-center gap-6">
-      <div className="flex flex-wrap items-center justify-center gap-3">
+    <div className="mx-auto flex max-w-2xl flex-col items-center gap-3 sm:gap-6">
+      <div className="flex w-full max-w-md items-center justify-between gap-3 sm:hidden">
+        <button
+          type="button"
+          onClick={() => setOptionsOpen(!optionsOpen)}
+          aria-expanded={optionsOpen}
+          className="flex min-w-0 items-center gap-1.5 rounded-md border border-neutral-200 bg-white px-3 py-1.5 text-sm text-neutral-700 shadow-sm shadow-neutral-900/5 transition hover:bg-neutral-50"
+        >
+          <span className="truncate">{optionsSummary}</span>
+          <span aria-hidden="true" className={`shrink-0 text-neutral-400 transition ${optionsOpen ? "rotate-180" : ""}`}>
+            ▾
+          </span>
+        </button>
+        {round.answered > 0 && (
+          <button
+            type="button"
+            onClick={round.peek}
+            title="See how this round is going so far"
+            className="shrink-0 text-xs font-medium text-neutral-500 tabular-nums transition hover:text-neutral-700"
+          >
+            {round.answered} answered · Stats
+          </button>
+        )}
+      </div>
+
+      <div className={`${foldOnPhone} flex-wrap items-center justify-center gap-3`}>
         <ScopeToggle
           scope={settings.studyScope}
           missedCount={missedCount}
@@ -281,7 +316,7 @@ export function VocabMode() {
         </div>
       </div>
 
-      <div className="flex w-full max-w-md flex-col gap-2 rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm shadow-sm shadow-neutral-900/5">
+      <div className={`${foldOnPhone} w-full max-w-md flex-col gap-2 rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm shadow-sm shadow-neutral-900/5`}>
         <div className="flex items-center justify-between gap-3">
           <label htmlFor="wrong-filter-slider" className="font-medium text-neutral-700">
             {filterActive ? (
@@ -335,7 +370,7 @@ export function VocabMode() {
       </div>
 
       {round.answered > 0 && (
-        <div className="flex w-full max-w-md items-center justify-between gap-3 text-xs text-neutral-400">
+        <div className="hidden w-full max-w-md items-center justify-between gap-3 text-xs text-neutral-400 sm:flex">
           <span className="tabular-nums">
             {round.answered} answered this round
           </span>
@@ -350,7 +385,7 @@ export function VocabMode() {
         </div>
       )}
 
-      <div className="flex w-full max-w-md flex-col gap-2 rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm shadow-sm shadow-neutral-900/5">
+      <div className={`${foldOnPhone} w-full max-w-md flex-col gap-2 rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm shadow-sm shadow-neutral-900/5`}>
         <div className="flex items-center justify-between gap-3">
           <label htmlFor="added-window-slider" className="font-medium text-neutral-700">
             {addedFilterActive ? (

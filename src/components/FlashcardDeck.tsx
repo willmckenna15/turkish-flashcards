@@ -103,14 +103,14 @@ export function FlashcardDeck<T>({
   }
 
   return (
-    <div className="flex flex-col items-center gap-4">
+    <div className="flex flex-col items-center gap-3 sm:gap-4">
       <p className="text-xs font-medium uppercase tracking-wide text-neutral-400">
         Card {safeIndex + 1} of {order.length}
       </p>
 
       <div
         key={getKey(currentCard)}
-        className="relative w-full max-w-md cursor-pointer select-none rounded-2xl border border-neutral-200 bg-white p-8 text-center shadow-md shadow-neutral-900/5 transition-transform duration-150 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-neutral-900/10"
+        className="relative w-full max-w-md cursor-pointer select-none rounded-2xl border border-neutral-200 bg-white p-6 text-center shadow-md sm:p-8 shadow-neutral-900/5 transition-transform duration-150 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-neutral-900/10"
         style={{ transform: `translateX(${dragX}px) rotate(${dragX / 30}deg)` }}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
@@ -126,7 +126,7 @@ export function FlashcardDeck<T>({
             flipped ? "bg-red-500" : "bg-neutral-200"
           }`}
         />
-        <div className="flex min-h-[10rem] items-center justify-center text-lg text-neutral-800">
+        <div className="flex min-h-[8rem] items-center sm:min-h-[10rem] justify-center text-lg text-neutral-800">
           {flipped ? renderBack(currentCard) : renderFront(currentCard)}
         </div>
         <p className="mt-4 text-xs text-neutral-400">

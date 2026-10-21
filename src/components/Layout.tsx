@@ -10,11 +10,13 @@ interface LayoutProps {
   children: ReactNode;
 }
 
-const tabs: { id: Tab; label: string }[] = [
-  { id: "words", label: "Words" },
-  { id: "vocab", label: "Vocab study" },
-  { id: "grammar", label: "Grammar practice" },
-  { id: "stats", label: "Vocab stats" },
+// `short` is used on phones, where the full labels wrap the tabs onto a
+// second row.
+const tabs: { id: Tab; label: string; short: string }[] = [
+  { id: "words", label: "Words", short: "Words" },
+  { id: "vocab", label: "Vocab study", short: "Vocab" },
+  { id: "grammar", label: "Grammar practice", short: "Grammar" },
+  { id: "stats", label: "Vocab stats", short: "Stats" },
 ];
 
 function SyncStatus() {
@@ -65,7 +67,7 @@ export function Layout({ tab, onTabChange, children }: LayoutProps) {
   return (
     <div className="min-h-screen">
       <header className="border-b border-neutral-200/80 bg-white/80 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-4xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-4">
+        <div className="mx-auto flex max-w-4xl flex-col gap-2 px-4 py-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-3 sm:px-6 sm:py-4">
           <div className="flex items-center justify-between gap-2.5">
             <div className="flex items-center gap-2.5">
               <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-red-600 to-red-700 text-sm font-semibold text-white shadow-sm shadow-red-900/20">
@@ -95,7 +97,8 @@ export function Layout({ tab, onTabChange, children }: LayoutProps) {
                       : "text-neutral-600 hover:bg-neutral-100"
                   }`}
                 >
-                  {t.label}
+                  <span className="sm:hidden">{t.short}</span>
+                  <span className="hidden sm:inline">{t.label}</span>
                 </button>
               ))}
             </nav>
@@ -110,7 +113,7 @@ export function Layout({ tab, onTabChange, children }: LayoutProps) {
         </div>
       </header>
 
-      <main className="mx-auto max-w-4xl px-4 py-8 sm:px-6 sm:py-10">{children}</main>
+      <main className="mx-auto max-w-4xl px-4 py-3 sm:px-6 sm:py-10">{children}</main>
     </div>
   );
 }

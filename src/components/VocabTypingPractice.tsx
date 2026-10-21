@@ -303,7 +303,7 @@ export function VocabTypingPractice({
   const multi = variants.length > 1;
 
   return (
-    <div className="flex flex-col items-center gap-4">
+    <div className="flex flex-col items-center gap-3 sm:gap-4">
       <p className="text-xs font-medium uppercase tracking-wide text-neutral-400">
         Card {safeIndex + 1} of {order.length}
       </p>
@@ -311,10 +311,10 @@ export function VocabTypingPractice({
       <div
         ref={cardRef}
         style={{ minHeight: cardMinHeight || undefined }}
-        className="w-full max-w-md rounded-2xl border border-neutral-200 bg-white p-6 shadow-md shadow-neutral-900/5"
+        className="w-full max-w-md rounded-2xl border border-neutral-200 bg-white p-5 shadow-md shadow-neutral-900/5 sm:p-6"
         onKeyDown={handleCardKeyDown}
       >
-        <p className="mb-4 text-center text-lg text-neutral-800">{prompt}</p>
+        <p className="mb-3 text-center text-lg text-neutral-800 sm:mb-4">{prompt}</p>
 
         {found.length > 0 && (
           <ul className="mb-3 flex flex-wrap justify-center gap-1.5" aria-label="Answers you've got so far">
