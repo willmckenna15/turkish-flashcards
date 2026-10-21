@@ -1,6 +1,5 @@
 import {
   useEffect,
-  useLayoutEffect,
   useRef,
   useState,
   type FormEvent,
@@ -162,17 +161,6 @@ export function VocabTypingPractice({
     }
   }, [currentKey, outcome, nearMiss]);
 
-  // The card grows when an answer is marked (the result opens under the
-  // input) and would shrink back on the next card. Scrolled to the bottom of
-  // the page — as you are on a phone with the keyboard up — that shrink drags
-  // the whole screen down each time, so the card is never let shrink while
-  // you're practising.
-  const [cardMinHeight, setCardMinHeight] = useState(0);
-  useLayoutEffect(() => {
-    const height = cardRef.current?.offsetHeight ?? 0;
-    if (height > cardMinHeight) setCardMinHeight(height);
-  });
-
   // Once a card is over, Enter should move on to the next one, so the input
   // stays focused and editable rather than going read-only or disabled — a
   // read-only field drops a phone's on-screen keyboard. Typing is ignored
@@ -310,7 +298,6 @@ export function VocabTypingPractice({
 
       <div
         ref={cardRef}
-        style={{ minHeight: cardMinHeight || undefined }}
         className="w-full max-w-md rounded-2xl border border-neutral-200 bg-white p-5 shadow-md shadow-neutral-900/5 sm:p-6"
         onKeyDown={handleCardKeyDown}
       >
