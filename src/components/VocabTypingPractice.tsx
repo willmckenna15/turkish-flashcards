@@ -1,4 +1,12 @@
-import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent, type MouseEvent } from "react";
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type FormEvent,
+  type KeyboardEvent,
+  type MouseEvent,
+} from "react";
 import type { FrontSide, Word } from "../types";
 
 interface VocabTypingPracticeProps {
@@ -142,13 +150,28 @@ export function VocabTypingPractice({
   // can be typed back to back without clicking into it each time. Only pulls
   // focus back from inside the card (or from nowhere), so dragging a filter
   // slider above, which can move the deck onto a new card, isn't interrupted.
+  // Left alone when it's already there: re-focusing a focused input makes
+  // iOS Safari scroll the page to reveal it again, on every answer.
   const cardRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
+    const input = inputRef.current;
     const active = document.activeElement;
+    if (!input || active === input) return;
     if (!active || active === document.body || cardRef.current?.contains(active)) {
-      inputRef.current?.focus();
+      input.focus({ preventScroll: true });
     }
   }, [currentKey, outcome, nearMiss]);
+
+  // The card grows when an answer is marked (the result opens under the
+  // input) and would shrink back on the next card. Scrolled to the bottom of
+  // the page — as you are on a phone with the keyboard up — that shrink drags
+  // the whole screen down each time, so the card is never let shrink while
+  // you're practising.
+  const [cardMinHeight, setCardMinHeight] = useState(0);
+  useLayoutEffect(() => {
+    const height = cardRef.current?.offsetHeight ?? 0;
+    if (height > cardMinHeight) setCardMinHeight(height);
+  });
 
   // Once a card is over, Enter should move on to the next one, so the input
   // stays focused and editable rather than going read-only or disabled — a
@@ -287,6 +310,7 @@ export function VocabTypingPractice({
 
       <div
         ref={cardRef}
+        style={{ minHeight: cardMinHeight || undefined }}
         className="w-full max-w-md rounded-2xl border border-neutral-200 bg-white p-6 shadow-md shadow-neutral-900/5"
         onKeyDown={handleCardKeyDown}
       >
