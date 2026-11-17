@@ -6,6 +6,7 @@ import {
   type KeyboardEvent,
   type MouseEvent,
 } from "react";
+import { swapTurkishLetterOnTab } from "../lib/turkishLetters";
 import type { FrontSide, Word } from "../types";
 
 interface VocabTypingPracticeProps {
@@ -326,6 +327,7 @@ export function VocabTypingPractice({
               setAttempt(e.target.value);
               setNotice(null);
             }}
+            onKeyDown={locked ? undefined : swapTurkishLetterOnTab}
             aria-readonly={locked}
             placeholder={
               found.length > 0

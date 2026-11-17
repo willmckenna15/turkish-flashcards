@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { gradeAttempt, gradeAttemptsBatch, ApiError, type KnownWordRef } from "../lib/api";
 import { knownWordsInSentence } from "../lib/sentenceWords";
+import { swapTurkishLetterOnTab } from "../lib/turkishLetters";
 import { gradeLocally } from "../lib/localGrade";
 import { SentenceCard as SentenceCardView } from "./SentenceCard";
 import { grammarConcepts } from "../data/grammarConcepts";
@@ -534,6 +535,7 @@ export function TypingPractice({
           <input
             value={attempt}
             onChange={(e) => setAttempt(e.target.value)}
+            onKeyDown={swapTurkishLetterOnTab}
             disabled={submitted}
             placeholder="Type the Turkish sentence…"
             className="rounded-md border border-neutral-300 px-3 py-2 text-base outline-none transition focus:border-red-600 focus:ring-2 focus:ring-red-600/20 disabled:bg-neutral-50"
